@@ -7,22 +7,22 @@
 set -e
 
 echo "=========================================="
-echo "🚀 Keycloak Deployment"
+echo " Keycloak Deployment"
 echo "=========================================="
 echo ""
 
 # Validate prerequisites
-echo "🔍 Validating prerequisites..."
+echo "Validating prerequisites..."
 
 # Check nginx.conf
 if [ ! -f "nginx.conf" ]; then
-    echo "❌ nginx.conf not found!"
+    echo "nginx.conf not found!"
     echo "Please ensure nginx.conf is in the current directory"
     exit 1
 fi
 
 if grep -q "your-domain.com" nginx.conf; then
-    echo "❌ nginx.conf not configured!"
+    echo " nginx.conf not configured!"
     echo ""
     echo "Please edit nginx.conf and replace 'your-domain.com' with your actual domain"
     echo "Example: nano nginx.conf"
@@ -32,7 +32,7 @@ fi
 
 # Check SSL certificates
 if [ ! -d "ssl" ]; then
-    echo "❌ ssl/ folder not found!"
+    echo " ssl/ folder not found!"
     echo "Creating ssl/ folder..."
     mkdir -p ssl
     echo ""
@@ -44,7 +44,7 @@ if [ ! -d "ssl" ]; then
 fi
 
 if [ ! -f "ssl/fullchain.pem" ] || [ ! -f "ssl/privkey.pem" ]; then
-    echo "❌ SSL certificates not found!"
+    echo " SSL certificates not found!"
     echo ""
     echo "Please add the following files to ssl/ folder:"
     echo "  - ssl/fullchain.pem (SSL certificate)"
@@ -59,39 +59,39 @@ if [ ! -f "ssl/fullchain.pem" ] || [ ! -f "ssl/privkey.pem" ]; then
     exit 1
 fi
 
-echo "✅ Prerequisites validated"
+echo " Prerequisites validated"
 echo ""
 
 # Check Docker
-echo "🐳 Checking Docker..."
+echo " Checking Docker..."
 if ! command -v docker &> /dev/null; then
     echo "Installing Docker..."
     curl -fsSL https://get.docker.com -o get-docker.sh
     sudo sh get-docker.sh
     sudo usermod -aG docker $USER
-    echo "✅ Docker installed"
+    echo " Docker installed"
 else
-    echo "✅ Docker found"
+    echo "Docker found"
 fi
 
 if ! command -v docker-compose &> /dev/null; then
     echo "Installing Docker Compose..."
     sudo apt update
     sudo apt install docker-compose -y
-    echo "✅ Docker Compose installed"
+    echo " Docker Compose installed"
 else
-    echo "✅ Docker Compose found"
+    echo " Docker Compose found"
 fi
 echo ""
 
 # Extract domain from nginx.conf
-echo "📝 Reading configuration..."
+echo " Reading configuration..."
 DOMAIN_NAME=$(grep -m 1 "server_name" nginx.conf | grep -v "#" | awk '{print $2}' | tr -d ';')
 echo "Domain: ${DOMAIN_NAME}"
 echo ""
 
 # Create keycloak themes
-echo "🎨 Creating custom themes..."
+echo " Creating custom themes..."
 mkdir -p keycloak-themes/AIOT/email/{html,text,messages}
 
 cat > keycloak-themes/AIOT/theme.properties << 'EOF'
@@ -116,11 +116,11 @@ emailVerificationSubject=Autonomous ITOps Toolkit Verification email
 emailVerificationBody=Someone has created a {2} account with this email address. If this was you, click the link below to verify your email address
 emailVerificationBodyHtml=<p>Someone has created a {2} account with this email address. If this was you, click the link below to verify your email address</p><p><a href="{0}">Link to e-mail address verification</a></p><p>This link will expire within {3}.</p>
 EOF
-echo "✅ Themes created"
+echo " Themes created"
 echo ""
 
 # Create docker-compose.yml
-echo "📝 Creating docker-compose.yml..."
+echo " Creating docker-compose.yml..."
 cat > docker-compose.yml << EOF
 version: '3.8'
 
@@ -190,44 +190,44 @@ networks:
   internal:
     driver: bridge
 EOF
-echo "✅ docker-compose.yml created"
+echo " docker-compose.yml created"
 echo ""
 
 # Pull images
-echo "📥 Pulling Docker images..."
+echo " Pulling Docker images..."
 docker-compose pull
-echo "✅ Images pulled"
+echo " Images pulled"
 echo ""
 
 # Start services
-echo "🚀 Starting services..."
+echo " Starting services..."
 docker-compose up -d
-echo "✅ Services started"
+echo " Services started"
 echo ""
 
 # Wait for services
-echo "⏳ Waiting for services to start (60 seconds)..."
+echo " Waiting for services to start (60 seconds)..."
 sleep 60
 
 # Show status
 echo ""
 echo "=========================================="
-echo "📊 Service Status"
+echo " Service Status"
 echo "=========================================="
 docker-compose ps
 echo ""
 
 # Final message
 echo "=========================================="
-echo "🎉 Deployment Complete!"
+echo " Deployment Complete!"
 echo "=========================================="
 echo ""
-echo "📍 Access Keycloak:"
+echo " Access Keycloak:"
 echo "   URL: https://${DOMAIN_NAME}"
 echo "   Username: admin"
 echo "   Password: Admin@2025"
 echo ""
-echo "📋 Next Steps:"
+echo " Next Steps:"
 echo "   1. Login to Admin Console"
 echo "   2. Go to: Realm Settings → Themes"
 echo "   3. Set Email Theme to: AIOT"
